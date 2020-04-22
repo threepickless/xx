@@ -1,0 +1,218 @@
+# NOMBRE DEL PROYECTO: CROSSY ROAD 
+# AUTORES: Diana Sofia Mora, Valentina Nivia Zambrano
+
+# LIBRERIAS
+import simplegui
+
+# CONSTANTES Y VARIABLES GLOBALES
+LIENZO = [600, 800]
+desplazamiento = [0.0, 0.0]
+snd_vol = 50
+snd_on = False
+# BANCO DE IMÁGENES
+fondo_img = simplegui.load_image("https://www.dropbox.com/s/x6qle928v5jh878/fondo%20largo.png?dl=")
+senal_img = simplegui.load_image("https://www.dropbox.com/s/trty71vbdjovg9e/objeto-tren.png?dl=1")
+pollo_img = simplegui.load_image("https://www.dropbox.com/s/1ywcgtapyece0r7/pollo.png?dl=1")
+pollo_avanza_img = simplegui.load_image("https://www.dropbox.com/s/1ljkkphqhzrb0di/frente.png?dl=1")
+pollo_der_img = simplegui.load_image ("https://www.dropbox.com/s/69c624zsne9fwts/der.png?dl=1")
+pollo_izq_img = simplegui.load_image ("https://www.dropbox.com/s/t1j0gfect7lcnme/izq.png?dl=1")
+roca1_img = simplegui.load_image("https://www.dropbox.com/s/voioz8b4otccuka/roca.png?dl=1")
+moneda1_img = simplegui.load_image("https://www.dropbox.com/s/v1mewcfqlrvgi0o/moneda.png?dl=1")
+arbol1_img = simplegui.load_image("https://www.dropbox.com/s/5q6y6wa65cf6zys/arbol.png?dl=1")
+
+
+# BANCO DE AUDIOS
+musica_snd = simplegui.load_sound("https://www.dropbox.com/s/gitxnmel8v2r9b0/Sonido%20de%20fondo.mp3?dl=1")
+
+# CLASES
+class Escenario:
+    def __init__(self, posicion, escala):
+        self.posicion = posicion
+        self.escala = escala
+
+class Personaje(Escenario):
+    def __init__(self, imagen, posicion, escala, frames, fps):
+        Escenario.__init__(self, posicion, escala)
+        self.imagen = imagen
+        self.tamano = [self.imagen.get_width() //frames, self.imagen.get_height()]
+        self.pivote = [self.tamano[0] // 2, self.tamano[1] //2]
+        self.frames = frames
+        self.tiempo = 0
+        self.fps = fps
+        self.velocidad = [0.0, 0.0]
+        self.anima_img() 
+    
+    def mover(self):
+        self.posicion[0] = self.posicion[0] + self.velocidad[0]
+        self.posicion[1] = self.posicion[1] + self.velocidad[1]
+    
+    def anima_img(self):
+        self.indice = int((self.tiempo % self.frames))
+        self.pivote_fotograma = [self.pivote[0]+ self.indice * self.tamano[0], self.pivote[1]]
+        self.tiempo += self.fps
+        
+    def draw(self, canvas):
+        canvas.draw_image(self.imagen, self.pivote_fotograma, self.tamano, self.posicion, self.escala)
+
+class Accesorio(Escenario):
+    def __init__(self, posicion, escala):
+        Escenario.__init__(self, posicion, escala)
+
+class Decorado(Escenario):
+    def __init__(self, posicion, escala):
+        Escenario.__init__(self, posicion, escala)
+
+
+class Obstaculo(Accesorio):
+    def __init__(self, imagen, posicion, escala):
+        Accesorio.__init__(self, posicion, escala)
+        self.imagen = imagen
+        self.tamano = [self.imagen.get_width(),self.imagen.get_height()]
+        self.pivote = [self.tamano[0] // 2, self.tamano[1] //2]
+
+    def draw(self, canvas):
+         canvas.draw_image(self.imagen, self.pivote, self.tamano, self.posicion, self.escala)
+
+
+class PremioCastigo(Accesorio):
+    def __init__(self, imagen, posicion, escala):
+        Accesorio.__init__(self, posicion, escala)
+        self.imagen = imagen
+        self.tamano = [self.imagen.get_width(),self.imagen.get_height()]
+        self.pivote = [self.tamano[0] // 2, self.tamano[1] //2]
+ 
+    def draw(self,canvas):
+        canvas.draw_image(self.imagen, self.pivote, self.tamano, self.posicion, self.escala)
+
+class Escenografia(Decorado):
+    def __init__(self, imagen, posicion, escala):
+        Decorado.__init__(self, posicion, escala)
+        self.imagen = imagen
+        self.tamano = [self.imagen.get_width(), self.imagen.get_height()]
+        self.pivote = [self.imagen.get_width() // 2, self.imagen.get_height() // 2]
+        self.velocidad = [0.0, 0.0]
+
+
+    def draw(self, canvas):
+        canvas.draw_image(self.imagen, self.pivote, self.tamano, self.posicion, self.escala)
+        
+class Efecto(Decorado):
+    def __init__(self, posicion, escala):
+        Decorado.__init__(self, posicion, escala)
+
+    def draw(self, canvas):
+        fondo,draw(canvas)
+        pollo,draw(canvas)
+
+class Puntuacion(Decorado):
+    def __init__(self, posicion, escala):
+        Decorado.__init__(self, posicion, escala)
+
+    def draw(self, canvas):
+        pass
+
+# MANEJADORES DE EVENTOS
+def input01_handler(text):
+    pass
+
+def play_pause():
+    global snd_on
+    if snd_on == False:
+        musica_snd.play()
+        snd_on = True
+    else:
+        musica_snd.rewind()
+        snd_on = False
+
+def vol_down():
+    global snd_vol
+    if snd_vol > 0:
+        snd_vol = snd_vol - 10
+    musica_snd.set_volume(snd_vol / 100.0)
+    volumen_button.set_text("Volumen = " + str(snd_vol) + "%")
+
+def vol_up():
+    global snd_vol
+    if snd_vol < 100:
+        snd_vol = snd_vol + 10
+    musica_snd.set_volume(snd_vol / 100.0)
+    volumen_button.set_text("Volumen = " + str(snd_vol) + "%")
+    
+def timer_handler_sprites():
+    pollo.anima_img()
+    
+def keydown_handler(key):
+    global desplazamiento
+    if key == simplegui.KEY_MAP['right']:
+        print("Derecha")
+        pollo.imagen = pollo_der_img
+        pollo.frames = 2
+        pollo.fps = 1
+        pollo.velocidad[0] = 2.0
+        
+        
+    if key == simplegui.KEY_MAP['left']:
+        print("Izquierda")
+        pollo.imagen = pollo_izq_img
+        pollo.frames = 2
+        pollo.fps = -1
+        pollo.velocidad[0] = -2.0
+
+        
+    if key == simplegui.KEY_MAP['up']:
+        print("Arriba")
+        pollo.frames = 2
+        pollo.fps = 1
+        pollo.velocidad[1] = -2.0
+        fondo.velocidad[1] = 2.0
+        senal.velocidad[0] = 2.0
+                
+
+def keyup_handler(key):
+    if key == simplegui.KEY_MAP['right'] or key == simplegui.KEY_MAP['left'] or key == simplegui.KEY_MAP['up']:
+        print("Quieto")
+        pollo.imagen = pollo_img
+        pollo.frames = 1
+        pollo.fps = 0
+        pollo.velocidad =[0.0, 0.0]
+        fondo.velocidad =[0.0, 0.0]
+        
+    
+    
+# MANEJADOR DE DIBUJO
+def draw_handler(canvas):
+    fondo.draw(canvas)
+    senal.draw(canvas)
+    pollo.draw(canvas)
+    pollo.mover()
+    roca1.draw(canvas)
+    moneda1.draw(canvas)
+    arbol1.draw(canvas)
+
+
+# REGISTRO DE CONTROLES
+frame = simplegui.create_frame("CROSSY ROAD", LIENZO[0], LIENZO[1])
+frame.set_draw_handler(draw_handler)
+label01 = frame.add_label("CROSSY ROAD")
+input01 = frame.add_input("Nombre Jugador:", input01_handler, 120)
+frame.add_button("Música", play_pause, 120)
+frame.add_button("Subir Volumen", vol_up, 120)
+frame.add_button("Bajar Volumen", vol_down, 120)
+volumen_button = frame.add_label("Volumen = " + str(snd_vol) + "%")
+timer_sprites = simplegui.create_timer(100, timer_handler_sprites)
+frame.set_keydown_handler(keydown_handler)
+frame.set_keyup_handler(keyup_handler)
+
+
+# REGISTRO DE OBJETOS
+fondo = Escenografia (fondo_img, [300, -2760], [fondo_img.get_width(), fondo_img.get_height()])
+senal = Escenografia (senal_img, [325, 110], [senal_img.get_width(), senal_img.get_height()])
+pollo = Personaje (pollo_img, [190, 775], [pollo_img.get_width(), pollo_img.get_height()], 1, 0)
+roca1 = Obstaculo (roca1_img, [140, 775],[roca1_img.get_width(), roca1_img.get_height()])
+moneda1 = PremioCastigo (moneda1_img, [520, 485],[moneda1_img.get_width(), moneda1_img.get_height()])
+arbol1 = Obstaculo (arbol1_img, [25, 775],[arbol1_img.get_width(), arbol1_img.get_height()])
+
+
+# INICIO
+frame.start()
+timer_sprites.start()
